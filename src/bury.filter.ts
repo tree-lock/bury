@@ -5,15 +5,17 @@ import { pathToRegexp, match } from "path-to-regexp";
 const filters = {
   clickFilter: (ele: HTMLElement) => !!ele.dataset["bupoint"],
   urlFilter: (path: string) => {
-    return urlMap.some((item) => pathToRegexp(item.path).test(path));
+    return urlMap.find((item) => pathToRegexp(item.path).test(path));
   },
   apiFilter: (url: string, method: Method = "GET") => {
-    return apiMap.some((item) => {
+    const ans = apiMap.find((item) => {
       if (item.method && method !== item.method) {
         return false;
       }
-      pathToRegexp(item.url).test(url);
+      if (url.startsWith(item.url + "?")) return true;
+      return pathToRegexp(item.url).test(url);
     });
+    return ans;
   },
 };
 

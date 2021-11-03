@@ -1,8 +1,8 @@
 import { Monitor, MonitorVue } from "@xmon/monitor";
 import initConfig, { BuryConfig } from "./config";
 import mitt from "mitt";
-import { urlMap, apiMap } from "./map.config";
-import { Payload } from "@xmon/monitor/dist/index.interface";
+import { apiMap } from "./map.config";
+import { AxiosInstance, Payload } from "@xmon/monitor/dist/index.interface";
 import { initMonitorVue, initMonitor } from "@xmon/monitor";
 import filters from "./bury.filter";
 export { initApiMap, initUrlMap } from "./map.config";
@@ -29,116 +29,210 @@ class Bury {
   config: BuryConfig = {};
   private monitor: Monitor;
   private isSpy: boolean = false;
+  todo: ((config: BuryConfig) => void)[] = [];
 
   constructor(monitor: Monitor, config: BuryConfig) {
     this.monitor = monitor;
     this.init(monitor, config);
   }
 
-  private async initBuriedVue(monitor: MonitorVue, defaultConfig: BuryConfig) {
+  private initBuriedVue(monitor: MonitorVue, defaultConfig: BuryConfig) {
     this.initBuried(monitor, defaultConfig);
     monitor.monitorRouter();
     monitor.on("Route", (payload) => {
-      if (payload.duration < 50) return;
-      if (filters.urlFilter(payload.from.path)) {
-        buryEmitter.emit("bury", {
-          type: "Leave",
-          payload: {
-            ...this.config,
-            eventId: urlMap[payload.from.path],
-            pageUrl: payload.from.path,
-            pageStayTime: payload.duration.toString(),
-          },
-          extra: payload,
-        });
+      const from = filters.urlFilter(payload.from.path);
+      const to = filters.urlFilter(payload.to.path);
+      if (from) {
+        if (Object.keys(this.config).length === 0) {
+          this.todo.push((config: BuryConfig) => {
+            buryEmitter.emit("bury", {
+              type: "Leave",
+              payload: {
+                ...config,
+                eventId: from.leave,
+                pageUrl: payload.from.path,
+                pageStayTime: payload.duration.toString(),
+              },
+              extra: payload,
+            });
+          });
+        } else {
+          buryEmitter.emit("bury", {
+            type: "Leave",
+            payload: {
+              ...this.config,
+              eventId: from.leave,
+              pageUrl: payload.from.path,
+              pageStayTime: payload.duration.toString(),
+            },
+            extra: payload,
+          });
+        }
       }
-      if (filters.urlFilter(payload.to.path)) {
+      if (to) {
+        if (Object.keys(this.config).length === 0) {
+          this.todo.push((config: BuryConfig) => {
+            buryEmitter.emit("bury", {
+              type: "Enter",
+              payload: {
+                ...config,
+                eventId: to.enter,
+                pageUrl: payload.to.path,
+              },
+              extra: payload,
+            });
+          });
+        } else {
+          buryEmitter.emit("bury", {
+            type: "Enter",
+            payload: {
+              ...this.config,
+              eventId: to.enter,
+              pageUrl: payload.to.path,
+            },
+            extra: payload,
+          });
+        }
+      }
+    });
+
+    return buryEmitter;
+  }
+
+  private initBuried(monitor: Monitor, defaultConfig: BuryConfig) {
+    initConfig(defaultConfig).then((res) => {
+      Object.assign(this.config, res);
+      const to = filters.urlFilter(window.location.pathname);
+      if (to) {
         buryEmitter.emit("bury", {
           type: "Enter",
           payload: {
             ...this.config,
-            eventId: urlMap[payload.to.path],
-            pageUrl: payload.to.path,
+            eventId: to.enter,
+            pageUrl: window.location.pathname,
+          },
+        });
+      }
+      this.todo.map((item) => item(res));
+      this.todo.length = 0;
+    });
+    monitor.monitorPage();
+    monitor.monitorClick(filters.clickFilter);
+    monitor.on("Action", (payload) => {
+      if (Object.keys(this.config).length === 0) {
+        this.todo.push((config: BuryConfig) => {
+          buryEmitter.emit("bury", {
+            type: "Click",
+            payload: {
+              ...config,
+              eventId: payload.eventId,
+            },
+            extra: payload,
+          });
+        });
+      } else {
+        buryEmitter.emit("bury", {
+          type: "Click",
+          payload: {
+            ...this.config,
+            eventId: payload.eventId,
           },
           extra: payload,
         });
       }
     });
-
-    return buryEmitter;
-  }
-
-  private async initBuried(monitor: Monitor, defaultConfig: BuryConfig) {
-    Object.assign(this.config, await initConfig(defaultConfig));
-    if (filters.urlFilter(window.location.pathname)) {
-      buryEmitter.emit("bury", {
-        type: "Enter",
-        payload: {
-          ...this.config,
-          eventId: urlMap[window.location.pathname],
-          pageUrl: window.location.pathname,
-        },
-      });
-    }
-    monitor.monitorPage();
-    monitor.monitorClick(filters.clickFilter);
-    monitor.on("Action", (payload) => {
-      buryEmitter.emit("bury", {
-        type: "Click",
-        payload: {
-          ...this.config,
-          eventId: payload.eventId,
-        },
-        extra: payload,
-      });
-    });
     monitor.on("Click", (payload) => {
       const eventId = payload.target.dataset["bupoint"] as string;
-      buryEmitter.emit("bury", {
-        type: "Click",
-        payload: {
-          ...this.config,
-          eventId,
-        },
-        extra: payload,
-      });
-    });
-    monitor.on("Api", (payload) => {
-      if (filters.apiFilter(payload.url, payload.method)) {
+      if (Object.keys(this.config).length === 0) {
+        this.todo.push((config: BuryConfig) => {
+          buryEmitter.emit("bury", {
+            type: "Click",
+            payload: {
+              ...config,
+              eventId,
+            },
+            extra: payload,
+          });
+        });
+      } else {
         buryEmitter.emit("bury", {
-          type: "Api",
+          type: "Click",
           payload: {
             ...this.config,
-            eventId: apiMap[payload.url],
-            apiUrl: payload.url,
+            eventId,
           },
           extra: payload,
         });
+      }
+    });
+    monitor.on("Api", (payload) => {
+      const api = filters.apiFilter(payload.url, payload.method);
+      if (api) {
+        if (Object.keys(this.config).length === 0) {
+          this.todo.push((config: BuryConfig) => {
+            buryEmitter.emit("bury", {
+              type: "Api",
+              payload: {
+                ...config,
+                eventId: api.eventId,
+                apiUrl: payload.url,
+              },
+              extra: payload,
+            });
+          });
+        } else {
+          buryEmitter.emit("bury", {
+            type: "Api",
+            payload: {
+              ...this.config,
+              eventId: api.eventId,
+              apiUrl: payload.url,
+            },
+            extra: payload,
+          });
+        }
       }
     });
 
     monitor.on("Unload", (payload) => {
-      if (filters.urlFilter(window.location.pathname)) {
-        buryEmitter.emit("bury", {
-          type: "Leave",
-          payload: {
-            ...this.config,
-            eventId: urlMap[window.location.pathname],
-            pageUrl: window.location.pathname,
-            pageStayTime: payload.duration.toString(),
-          },
-          extra: payload,
-        });
+      const form = filters.urlFilter(window.location.pathname);
+      if (form) {
+        if (Object.keys(this.config).length === 0) {
+          this.todo.push((config: BuryConfig) => {
+            buryEmitter.emit("bury", {
+              type: "Leave",
+              payload: {
+                ...config,
+                eventId: form.leave,
+                pageUrl: window.location.pathname,
+                pageStayTime: payload.duration.toString(),
+              },
+              extra: payload,
+            });
+          });
+        } else {
+          buryEmitter.emit("bury", {
+            type: "Leave",
+            payload: {
+              ...this.config,
+              eventId: form.leave,
+              pageUrl: window.location.pathname,
+              pageStayTime: payload.duration.toString(),
+            },
+            extra: payload,
+          });
+        }
       }
     });
+
     return buryEmitter;
   }
 
-  private async init(monitor: Monitor, config: BuryConfig, spy = false) {
+  private init(monitor: Monitor, config: BuryConfig, spy = false) {
     if (monitor instanceof MonitorVue) {
-      return await this.initBuriedVue(monitor, config);
+      return this.initBuriedVue(monitor, config);
     } else {
-      return await this.initBuried(monitor, config);
+      return this.initBuried(monitor, config);
     }
   }
 
@@ -163,6 +257,10 @@ class Bury {
       eventId,
     });
   }
+
+  trackApi(axiosInstance: AxiosInstance) {
+    this.monitor.monitorAxios(axiosInstance);
+  }
 }
 
 export const init = (
@@ -181,6 +279,14 @@ export const init = (
 export const track = (fn: () => any, eventId: string) => {
   if (ex.instance) {
     return ex.instance.track(fn, eventId);
+  } else {
+    throw new Error("Monitor should be init first | 你可能没有初始化Bury实例");
+  }
+};
+
+export const trackApi = (axiosInstance: AxiosInstance) => {
+  if (ex.instance) {
+    return ex.instance.trackApi(axiosInstance);
   } else {
     throw new Error("Monitor should be init first | 你可能没有初始化Bury实例");
   }
