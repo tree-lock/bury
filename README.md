@@ -76,13 +76,13 @@ const bury = init(config, router);
 
 ```javascript
 import axios from "axios";
-import bury from "@xmon/bury";
+import { trackApi } from "@xmon/bury";
 
 const axiosInstance = axios.create({
   ...
 });
 
-bury.instance?.trackApi(axiosInstance);
+trackApi(axiosInstance);
 ```
 
 #### 配置
