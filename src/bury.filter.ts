@@ -12,8 +12,10 @@ const filters = {
       if (item.method && method !== item.method) {
         return false;
       }
-      if (url.startsWith(item.url + "?")) return true;
-      return pathToRegexp(item.url).test(url);
+      return (
+        pathToRegexp(item.url).test(url) ||
+        pathToRegexp(item.url).test(url.split("?")[0])
+      );
     });
     return ans;
   },
