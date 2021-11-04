@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "monitor most action by mitt",
   "main": "dist/index.js",
-  "repository": "git@github.com:darkXmo/monitor.git",
+  "repository": "git@github.com:darkXmo/bury.git",
   "author": "Xmo <18851989097@163.com>",
   "keywords": [
     "event",
@@ -17,7 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^3.3.0",
-    "@xmon/monitor": "^0.1.7",
+    "@xmon/monitor": "^0.2.0",
     "mitt": "^3.0.0",
     "path-to-regexp": "^6.2.0"
   },

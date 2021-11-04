@@ -22,6 +22,7 @@ export interface BuryConfig {
   apiUrl?: string;
   eventId?: string;
   userId?: string;
+  [K: string]: string;
 }
 
 declare var returnCitySN: {

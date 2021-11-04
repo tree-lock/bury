@@ -6,24 +6,26 @@ import { initMonitorVue, initMonitor } from "@xmon/monitor";
 import filters from "./bury.filter";
 export { initApiMap, initUrlMap } from "./map.config";
 // bupoint 修改为变量，可定制成任何自定义属性
+interface BuryCallBack {
+  type: "Action" | "Click" | "Leave" | "Enter" | "Api";
+  payload: BuryConfig;
+  extra?:
+    | Payload.ActionPayload
+    | Payload.ApiPayload
+    | Payload.ClickPayload
+    | Payload.LoadPayload
+    | Payload.RoutePayload;
+}
 export const buryEmitter = mitt<{
-  bury: {
-    type: "Action" | "Click" | "Leave" | "Enter" | "Api";
-    payload: BuryConfig;
-    extra?:
-      | Payload.ActionPayload
-      | Payload.ApiPayload
-      | Payload.ClickPayload
-      | Payload.LoadPayload
-      | Payload.RoutePayload;
-  };
+  bury: BuryCallBack;
 }>();
 const ex: { instance: Bury | null } = {
   instance: null,
 };
 
 class Bury {
-  on = buryEmitter.on;
+  on = (callback: (value: BuryCallBack) => void) =>
+    buryEmitter.on("bury", callback);
 
   config: BuryConfig = {};
   private monitor: Monitor;
@@ -197,6 +199,7 @@ class Bury {
       const form = filters.urlFilter(window.location.pathname);
       if (form?.leave) {
         if (Object.keys(this.config).length === 0) {
+          console.log("unload");
           this.todo.push((config: BuryConfig) => {
             buryEmitter.emit("bury", {
               type: "Leave",
@@ -251,10 +254,10 @@ class Bury {
     this.isSpy = true;
   }
 
-  track(fn: () => any, eventId: string): () => any {
+  track<T extends () => any>(fn: T, eventId: string): T {
     return this.monitor.monitorEvent(fn, {
       eventId,
-    });
+    }) as T;
   }
 
   trackApi(axiosInstance: AxiosInstance) {
@@ -275,17 +278,25 @@ export const init = (
   return (ex.instance = new Bury(monitor, config));
 };
 
-export const track = (fn: () => any, eventId: string) => {
+export function track<T extends () => any>(fn: T, eventId: string): T {
   if (ex.instance) {
     return ex.instance.track(fn, eventId);
   } else {
     throw new Error("Monitor should be init first | 你可能没有初始化Bury实例");
   }
-};
+}
 
 export const trackApi = (axiosInstance: AxiosInstance) => {
   if (ex.instance) {
     return ex.instance.trackApi(axiosInstance);
+  } else {
+    throw new Error("Monitor should be init first | 你可能没有初始化Bury实例");
+  }
+};
+
+export const onBury = (callback: (value: BuryCallBack) => void) => {
+  if (ex.instance) {
+    return ex.instance.on(callback);
   } else {
     throw new Error("Monitor should be init first | 你可能没有初始化Bury实例");
   }
