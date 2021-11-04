@@ -1,7 +1,6 @@
 import { Monitor, MonitorVue } from "@xmon/monitor";
 import initConfig, { BuryConfig } from "./config";
 import mitt from "mitt";
-import { apiMap } from "./map.config";
 import { AxiosInstance, Payload } from "@xmon/monitor/dist/index.interface";
 import { initMonitorVue, initMonitor } from "@xmon/monitor";
 import filters from "./bury.filter";
@@ -42,7 +41,7 @@ class Bury {
     monitor.on("Route", (payload) => {
       const from = filters.urlFilter(payload.from.path);
       const to = filters.urlFilter(payload.to.path);
-      if (from) {
+      if (from?.leave) {
         if (Object.keys(this.config).length === 0) {
           this.todo.push((config: BuryConfig) => {
             buryEmitter.emit("bury", {
@@ -69,7 +68,7 @@ class Bury {
           });
         }
       }
-      if (to) {
+      if (to?.enter) {
         if (Object.keys(this.config).length === 0) {
           this.todo.push((config: BuryConfig) => {
             buryEmitter.emit("bury", {
@@ -103,7 +102,7 @@ class Bury {
     initConfig(defaultConfig).then((res) => {
       Object.assign(this.config, res);
       const to = filters.urlFilter(window.location.pathname);
-      if (to) {
+      if (to?.enter) {
         buryEmitter.emit("bury", {
           type: "Enter",
           payload: {
@@ -196,7 +195,7 @@ class Bury {
 
     monitor.on("Unload", (payload) => {
       const form = filters.urlFilter(window.location.pathname);
-      if (form) {
+      if (form?.leave) {
         if (Object.keys(this.config).length === 0) {
           this.todo.push((config: BuryConfig) => {
             buryEmitter.emit("bury", {

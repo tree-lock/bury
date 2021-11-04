@@ -1,6 +1,6 @@
 import { Method } from "@xmon/monitor/dist/index.interface";
 import { apiMap, urlMap } from "./map.config";
-import { pathToRegexp, match } from "path-to-regexp";
+import { pathToRegexp } from "path-to-regexp";
 
 const filters = {
   clickFilter: (ele: HTMLElement) => !!ele.dataset["bupoint"],
