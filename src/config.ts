@@ -22,6 +22,7 @@ export interface BuryConfig {
   apiUrl?: string;
   eventId?: string;
   userId?: string;
+  timestamp?: string;
   [K: string]: string;
 }
 

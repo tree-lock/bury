@@ -154,7 +154,8 @@ onBury((value) => {
     })
     .join("&");
   let img = new Image(1, 1);
-  img.src = `http://localhost:8080/user/test?` + queries;
+  // 请将url改成你的后端埋点系统的API
+  img.src = `http://exmapleApi.com/bury?` + queries;
   // 3000ms超时处理
   setTimeout(() => {
     if (img && (!img.complete || !img.naturalWidth)) {
@@ -203,6 +204,7 @@ export interface BuryConfig {
   eventId?: string; // !!!
   userId?: string; // !!!
   [K: string]: string;
+  timestamp: string; // !!!
 }
 ```
 
@@ -211,6 +213,7 @@ export interface BuryConfig {
 1. ip
 2. cityName
 3. userId - 详情请查阅 https://github.com/fingerprintjs/fingerprintjs
+4. timestamp - 时间戳
 
 一个通常的方案是传入 `project`、`version`、`dataPointVersion`、`environment`。
 
@@ -321,3 +324,40 @@ interface BuryCallBack {
 - extra 监听事件的负载，详情请查看 https://github.com/darkXmo/monitor
 
 ## help
+
+### 如何在 Nuxt2 项目中使用
+
+#### plugins
+
+在 plugins 文件夹中创建文件 `bury.js` 或 `bury.ts` ;
+
+```typescript
+// bury.js
+import { init, initUrlMap } from '@xmon/bury';
+
+const bury = init({
+  version: 'projectVersion',
+  dataPointVersion: 'v1',
+  project: 'projectName'
+});
+
+initUrlMap([{
+  path: "/",
+  enter: "EnterEventPoint",
+  leave: "LeaveEventPoint"
+}, ...])
+
+bury.spy();
+```
+
+在 `nuxt.config.js` 或 `nuxt.config.ts` 中添加插件配置
+
+```javascript
+{
+  plugins: [
+    ...
+    { src: "@/plugins/bury.ts", mode: 'client' },
+    ...
+  ],
+}
+```

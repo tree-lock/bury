@@ -53,6 +53,7 @@ class Bury {
                 eventId: from.leave,
                 pageUrl: payload.from.path,
                 pageStayTime: payload.duration.toString(),
+                timestamp: payload.time.getTime().toString(),
               },
               extra: payload,
             });
@@ -65,6 +66,7 @@ class Bury {
               eventId: from.leave,
               pageUrl: payload.from.path,
               pageStayTime: payload.duration.toString(),
+              timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
           });
@@ -79,6 +81,7 @@ class Bury {
                 ...config,
                 eventId: to.enter,
                 pageUrl: payload.to.path,
+                timestamp: payload.time.getTime().toString(),
               },
               extra: payload,
             });
@@ -90,6 +93,7 @@ class Bury {
               ...this.config,
               eventId: to.enter,
               pageUrl: payload.to.path,
+              timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
           });
@@ -111,6 +115,7 @@ class Bury {
             ...this.config,
             eventId: to.enter,
             pageUrl: window.location.pathname,
+            timestamp: new Date().getTime().toString(),
           },
         });
       }
@@ -127,6 +132,7 @@ class Bury {
             payload: {
               ...config,
               eventId: payload.eventId,
+              timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
           });
@@ -137,6 +143,7 @@ class Bury {
           payload: {
             ...this.config,
             eventId: payload.eventId,
+            timestamp: payload.time.getTime().toString(),
           },
           extra: payload,
         });
@@ -151,6 +158,7 @@ class Bury {
             payload: {
               ...config,
               eventId,
+              timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
           });
@@ -161,6 +169,7 @@ class Bury {
           payload: {
             ...this.config,
             eventId,
+            timestamp: payload.time.getTime().toString(),
           },
           extra: payload,
         });
@@ -177,6 +186,7 @@ class Bury {
                 ...config,
                 eventId: api.eventId,
                 apiUrl: payload.url,
+                timestamp: payload.time.getTime().toString(),
               },
               extra: payload,
             });
@@ -188,6 +198,7 @@ class Bury {
               ...this.config,
               eventId: api.eventId,
               apiUrl: payload.url,
+              timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
           });
@@ -208,6 +219,7 @@ class Bury {
                 eventId: form.leave,
                 pageUrl: window.location.pathname,
                 pageStayTime: payload.duration.toString(),
+                timestamp: payload.time.getTime().toString(),
               },
               extra: payload,
             });
@@ -220,6 +232,7 @@ class Bury {
               eventId: form.leave,
               pageUrl: window.location.pathname,
               pageStayTime: payload.duration.toString(),
+              timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
           });
