@@ -1,5 +1,9 @@
 # xmon-bury [![npm license](https://img.shields.io/npm/l/@xmon/bury.svg?sanitize=true)](https://github.com/darkXmo/bury/blob/main/LICENSE) [![npm version](https://img.shields.io/npm/v/@xmon/bury.svg?sanitize=true)](https://www.npmjs.com/package/@xmon/bury)
 
+**如果你的项目埋点会严重影响到业务代码，是时候考虑使用 @xmon/bury 了**
+
+除了必要的添加 eventId，即为项目添加 ID 标识的行为以外，`@xmon/bury` 不会影响到你的业务代码，你只需要添加一下配置就够了！
+
 页面行为埋点，通过事件监听来进行行为监测，目前可以监控事件包括
 
 1. 点击事件（Click）
@@ -36,7 +40,7 @@ const bury = init(config);
 
 #### 配置
 
-你需要在 config 中指定你要监听的路由，路由对应事件（进入和离开）的 eventId。
+你需要在 `config` 中指定你要监听的路由，路由对应事件（进入和离开）的 `eventId`。
 
 同时你需要指定埋点的**基础参数**，他们通常是环境，埋点版本以及系统版本，这些**参数都是可选的**。
 
@@ -44,6 +48,7 @@ const bury = init(config);
 // config.js
 import { initUrlMap } from "@xmon/bury";
 
+// 用initUrlMap配置你想要监听的1页面路径和2加载页面，3离开页面的事件ID
 initUrlMap([
   {
     path: "/user/:id",
@@ -52,6 +57,7 @@ initUrlMap([
   },
 ]);
 
+// 这里填写埋点事件返回值中的额外字段，通常你需要添加以下几个配置信息
 const config = {
   environment: process.env.NODE_ENV,
   dataPointVersion: "v0.0.1",
@@ -62,17 +68,17 @@ export default config;
 
 ### 监听 Router
 
-如果你使用的是 Vue 单页面应用，则还需要监听 Vue-Router 跳转，因此你还需要传入 router 实例作为第 2 个参数
+如果你使用的是 `Vue` 单页面应用，则还需要监听 `Vue-Router` 跳转，因此你还需要传入 `router` 实例作为第 2 个参数
 
 ```javascript
 import router from "@/router";
-
+// 把router实例注册到bury中
 const bury = init(config, router);
 ```
 
 ### 监听 Api
 
-如果你需要监听 Axios Api ，则需要封装 Axios 实例。
+如果你需要监听 `Axios Api` ，则需要封装 `Axios` 实例。
 
 ```javascript
 import axios from "axios";
@@ -81,13 +87,13 @@ import { trackApi } from "@xmon/bury";
 const axiosInstance = axios.create({
   ...
 });
-
+// 提醒 @xmon/bury 监听 axios示例 发出请求的行为
 trackApi(axiosInstance);
 ```
 
 #### 配置
 
-和页面监听类似，你也需要指定你要监听的 api 路径以及对应的 eventId。
+和页面监听类似，你也需要指定你要监听的 `api` 路径以及对应的 `eventId`。
 
 ```javascript
 import { initUrlMap, initApiMap } from "@xmon/bury";
@@ -95,7 +101,7 @@ import { initUrlMap, initApiMap } from "@xmon/bury";
 initUrlMap([
   ...
 ]);
-
+// 利用 initApiMap 来配置需要监听的url
 initApiMap([
   {
     url: "/v3/search/anime",
@@ -109,7 +115,7 @@ const config = {
 export default config;
 ```
 
-> 值得注意的是，无论是监听页面加载还是监听 api，都会忽略 query 参数。
+> 值得注意的是，无论是监听页面加载还是监听 `api`，都会忽略 `query` 参数。
 
 ### 监听点击事件
 
@@ -117,23 +123,24 @@ export default config;
 <img :src="item.image_url" data-bupoint="eventId" />
 ```
 
-对于需要监听点击事件的元素，添加 `data-bupoint` 属性，并注入 eventId 即可。
+对于需要监听点击事件的元素，添加 `data-bupoint` 属性，并注入 `eventId` 即可。
 
 ### 监听特定行为
 
 ```javascript
 import { track } from "@xmon/bury";
-
+// 对于特定的行为，你需要将行为包装成函数，并配置好eventId，然后再使用track来监听这个函数行为
 const increase = track(() => {
   console.log("I am tracked");
 }, "eventId");
 
+// track的返回值是你传入的函数，原封不动。
 // increase = () => { console.log('I am tracked') }
 ```
 
-对于行为，你应当使用 track 进行封装，第一个参数是要封装的函数，第二个参数是 eventId 。
+对于行为，你应当使用 `track` 进行封装，第一个参数是要封装的函数，第二个参数是 `eventId` 。
 
-track 会在封装后返回被封装的函数。
+`track` 会在封装后返回被封装的函数。
 
 埋点行为发生在特定行为执行之前。
 
@@ -141,13 +148,17 @@ track 会在封装后返回被封装的函数。
 
 触发监听行为会同时触发埋点行为，通过 `onBury` 我们可以获取到埋点行为的回调。
 
-**初始化(init)之后才能访问到 instance、track、trackApi、onBury 等方法，否则会抛出未定义错误**
+**初始化(`init`)之后才能访问到 `instance`、`track`、`trackApi`、`onBury` 等方法，否则会抛出未定义错误**
 
 ```javascript
 import { onBury } from "@xmon/bury";
 
+// 做好配置之后，你可以使用 onBury 来监听事件
+// 一旦 你配置过的url加载或关闭了 OR 你监听的api请求发送了 OR 你监听的事件被调用了 OR 你观察的Dom被点击了 => 就会触发在 onBury 中注册的回调函数
 onBury((value) => {
+  // 下文中 BuryConfig 中会说明 payload 中包含哪些值
   const buryInfo = value.payload;
+  // 下面是我的埋点回调示例行为，你应当用你的行为代替示例
   const queries = Object.entries(buryInfo)
     .map(([key, value]) => {
       return key + "=" + encodeURI(value);
@@ -167,9 +178,9 @@ onBury((value) => {
 
 每当被监听的事件发生的时候，都会注册在 `onBury` 事件中的回调函数。
 
-在这个例子中，它将会取出回调参数中的 payload ，并将它封装并发出 img 的 Get 请求。
+在这个例子中，它将会取出回调参数中的 `payload` ，并将它封装并发出 `img` 的 `Get` 请求。
 
-> 由于 `onBeforeUnload` 方法在页面即将关闭时执行，此时无法使用 Axios 来发起异步请求。但 img 和 XMLHttpRequest 同步请求仍然可以执行。
+> 由于 `onBeforeUnload` 方法在页面即将关闭时执行，此时无法使用 `Axios` 来发起异步请求。但 `img` 和 `XMLHttpRequest` 同步请求仍然可以执行。
 
 ## API
 
@@ -208,12 +219,12 @@ export interface BuryConfig {
 }
 ```
 
-`BuryConfig` 中通过 `"@fingerprintjs/fingerprintjs"` 模块 以及 `"http://pv.sohu.com/cityjson?ie=utf-8"` Api 接口获取了一些预设值，它们分别是
+`BuryConfig` 中通过 `"@fingerprintjs/fingerprintjs"` 模块 以及 `"http://pv.sohu.com/cityjson?ie=utf-8"` `Api` 接口获取了一些预设值，它们分别是
 
-1. ip
-2. cityName
-3. userId - 详情请查阅 https://github.com/fingerprintjs/fingerprintjs
-4. timestamp - 时间戳
+1. `ip`
+2. `cityName`
+3. `userId` - 详情请查阅 https://github.com/fingerprintjs/fingerprintjs
+4. `timestamp` - 时间戳
 
 一个通常的方案是传入 `project`、`version`、`dataPointVersion`、`environment`。
 
@@ -221,12 +232,12 @@ export interface BuryConfig {
 const bury = init(config, router);
 ```
 
-- config 预定义参数
-- router 可选参数，如果要监听 VueRouter 跳转的话
+- `config` 预定义参数
+- `router` 可选参数，如果要监听 `VueRouter` 跳转的话
 
 #### Bury.spy
 
-开启监听模式（生产模式下请不要打开），可以在 devtools 的控制台中查看每次触发埋点事件的返回值
+开启监听模式（生产模式下请不要打开），可以在 `devtools` 的控制台中查看每次触发埋点事件的返回值
 
 ```javascript
 bury.spy();
@@ -246,9 +257,9 @@ interface UrlMap: {
 }[]
 ```
 
-- url 页面的 url 地址，定义遵循 https://github.com/pillarjs/path-to-regexp/tree/v1.7.0 ，通常可以和 VueRouter 中的 path 参数对照着填。
-- enter 进入该埋点页面的 eventId
-- leave 离开该埋点页面的 eventId
+- `url` 页面的 `url` 地址，定义遵循 https://github.com/pillarjs/path-to-regexp/tree/v1.7.0 ，通常可以和 `VueRouter` 中的 `path` 参数对照着填。
+- `enter` 进入该埋点页面的 `eventId`
+- `leave` 离开该埋点页面的 `eventId`
 
 > 关于 `path` https://github.com/pillarjs/path-to-regexp/tree/v1.7.0
 
@@ -262,9 +273,9 @@ interface ApiMap: {
 }[] = [];
 ```
 
-- url 接口的 url 地址
-- method 可选参数 Method ，例如 `GET` `POST` ，如果未定义，则监听该 url 下的所有 Method
-- eventId 该埋点接口的 eventId
+- `url` 接口的 `url` 地址
+- `method` 可选参数 `Method` ，例如 `GET` `POST` ，如果未定义，则监听该 `url` 下的所有 `Method`
+- `eventId` 该埋点接口的 `eventId`
 
 #### track
 
@@ -274,14 +285,14 @@ interface ApiMap: {
 function track<T extends () => any>(fn: T, eventId: string): T;
 ```
 
-- fn 被埋点的方法
-- eventId 该埋点方法的 eventId
+- `fn` 被埋点的方法
+- `eventId` 该埋点方法的 `eventId`
 
 为传入的方法埋点，并返回埋完点的方法。
 
 #### trackApi
 
-对 Axios 进行埋点监听
+对 `Axios` 进行埋点监听
 
 ```typescript
 function trackApi(axiosInstance: AxiosInstance): void;
@@ -295,7 +306,7 @@ function trackApi(axiosInstance: AxiosInstance): void;
 function onBury(callback: (value: BuryCallBack) => void): void;
 ```
 
-- callback 回调函数
+- `callback` 回调函数
 
 #### BuryCallBack
 
@@ -312,16 +323,16 @@ interface BuryCallBack {
 }
 ```
 
-- type 类型 分别是埋点事件、点击、离开页面、载入页面和接口
-- payload 负载，除了预定义的配置以外
-  - Enter
-    - pageUrl 进入的页面 url
-  - Leave
-    - PageStayTime 在当前页面停留的时间
-    - pageUrl 离开的页面 url
-  - Api
-    - apiUrl 接口的 url
-- extra 监听事件的负载，详情请查看 https://github.com/darkXmo/monitor
+- `type` 类型 分别是埋点事件、点击、离开页面、载入页面和接口
+- `payload` 负载，除了预定义的配置以外
+  - `Enter`
+    - `pageUrl` 进入的页面 `url`
+  - `Leave`
+    - `PageStayTime` 在当前页面停留的时间
+    - `pageUrl` 离开的页面 `url`
+  - `Api`
+    - `apiUrl` 接口的 `url`
+- `extra` 监听事件的负载，详情请查看 https://github.com/darkXmo/monitor
 
 ## help
 
@@ -329,7 +340,7 @@ interface BuryCallBack {
 
 #### plugins
 
-在 plugins 文件夹中创建文件 `bury.js` 或 `bury.ts` ;
+在 `plugins` 文件夹中创建文件 `bury.js` 或 `bury.ts` ;
 
 ```typescript
 // bury.js
