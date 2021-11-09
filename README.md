@@ -193,38 +193,46 @@ export const init = (config: BuryConfig, router?: VueRouter) => Bury;
 // 标记为 !!! 的参数是 payload 中预定义的。
 // 你也可以自定义参数
 export interface BuryConfig {
-  ua?: string;
+  eventId?: string; // 必要，事件ID
+  timestamp?: string; // !!!
+  ua?: string; // !!!
+  browser?: "MSIE" | "Firefox" | "Safari" | "Chrome" | "Opera"; // !!!
+  referrer?: string; // !!!
+  width?: string; // !!!
+  height?: string; // !!!
+  ip?: string; // !!!
+  cityName?: string; // !!!
+  isPhone?: "phone" | "pc"; // !!!
+  userId?: string;
+  apiUrl?: string;
+  pageUrl?: string;
+  pageStayTime?: string;
   project?: string;
+  environment?: string;
+  dataPointVersion?: string;
+  version?: string;
   channelCode?: string;
   sourceCode?: string;
   topCause?: string;
   phone?: string;
-  unionId?: string;
-  openId?: string;
   enterTime?: string;
-  time?: string;
-  dataPointVersion?: string;
-  environment?: string;
-  version?: string;
-  ip?: string; // !!!
-  cityName?: string; // !!!
   extraInfo?: string;
-  pageUrl?: string;
-  pageStayTime?: string;
-  apiUrl?: string;
-  eventId?: string; // !!!
-  userId?: string; // !!!
   [K: string]: string;
-  timestamp: string; // !!!
 }
 ```
 
 `BuryConfig` 中通过 `"@fingerprintjs/fingerprintjs"` 模块 以及 `"http://pv.sohu.com/cityjson?ie=utf-8"` `Api` 接口获取了一些预设值，它们分别是
 
-1. `ip`
-2. `cityName`
-3. `userId` - 详情请查阅 https://github.com/fingerprintjs/fingerprintjs
-4. `timestamp` - 时间戳
+1. `timestamp` - 时间戳 - `new Date().getTime()`
+2. `ua` - 客户端信息（navigator.userAgent），详情请查看 https://developer.mozilla.org/zh-CN/docs/Web/API/Window/navigator
+3. `browser` - 浏览器类型
+4. `referrer` - 引用来源 - http://www.ruanyifeng.com/blog/2019/06/http-referer.html
+5. `width` - 窗口宽度
+6. `height` - 窗口高度
+7. `ip` - 客户端 ip 地址
+8. `cityName` - 客户端省市名 - 如 “江苏省南京市”
+9. `isPhone` - 是否是移动端，如果是，则值为 `phone`
+10. `userId` - 客户端设备的唯一标识符 详情请查阅 https://github.com/fingerprintjs/fingerprintjs
 
 一个通常的方案是传入 `project`、`version`、`dataPointVersion`、`environment`。
 
