@@ -367,6 +367,10 @@ initUrlMap([{
 }, ...])
 
 bury.spy();
+
+bury.onBury((value) => {
+  // do something with value
+})
 ```
 
 在 `nuxt.config.js` 或 `nuxt.config.ts` 中添加插件配置
