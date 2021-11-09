@@ -19,7 +19,8 @@
     "@fingerprintjs/fingerprintjs": "^3.3.0",
     "@xmon/monitor": "^0.2.0",
     "mitt": "^3.0.0",
-    "path-to-regexp": "^6.2.0"
+    "path-to-regexp": "^6.2.0",
+    "web-vitals": "^2.1.2"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.6",

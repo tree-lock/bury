@@ -4,6 +4,8 @@ import mitt from "mitt";
 import { AxiosInstance, Payload } from "@xmon/monitor/dist/index.interface";
 import { initMonitorVue, initMonitor } from "@xmon/monitor";
 import filters from "./bury.filter";
+import { getLCP, getFID, getCLS } from "web-vitals";
+
 export { initApiMap, initUrlMap } from "./map.config";
 // bupoint 修改为变量，可定制成任何自定义属性
 interface BuryCallBack {
@@ -22,6 +24,7 @@ export const buryEmitter = mitt<{
 const ex: { instance: Bury | null } = {
   instance: null,
 };
+const defaultConfig: BuryConfig = {};
 
 class Bury {
   on = (callback: (value: BuryCallBack) => void) =>
@@ -314,5 +317,8 @@ export const onBury = (callback: (value: BuryCallBack) => void) => {
     throw new Error("Monitor should be init first | 你可能没有初始化Bury实例");
   }
 };
+
+// TODO: 添加性能监控
+// TODO: 添加错误捕获埋点
 
 export default ex;
