@@ -15,16 +15,6 @@ export interface BuryConfig {
   apiUrl?: string;
   pageUrl?: string;
   pageStayTime?: string;
-  project?: string;
-  environment?: string;
-  dataPointVersion?: string;
-  version?: string;
-  channelCode?: string;
-  sourceCode?: string;
-  topCause?: string;
-  phone?: string;
-  enterTime?: string;
-  extraInfo?: string;
   [K: string]: string;
 }
 

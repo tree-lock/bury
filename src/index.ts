@@ -4,21 +4,13 @@ import mitt from "mitt";
 import { AxiosInstance, Payload } from "@xmon/monitor/dist/index.interface";
 import { initMonitorVue, initMonitor } from "@xmon/monitor";
 import filters from "./bury.filter";
+import { BuryCallBackPayload } from "./index.interface";
 
 export { initApiMap, initUrlMap } from "./map.config";
 // bupoint 修改为变量，可定制成任何自定义属性
-interface BuryCallBack {
-  type: "Action" | "Click" | "Leave" | "Enter" | "Api";
-  payload: BuryConfig;
-  extra?:
-    | Payload.ActionPayload
-    | Payload.ApiPayload
-    | Payload.ClickPayload
-    | Payload.LoadPayload
-    | Payload.RoutePayload;
-}
+
 export const buryEmitter = mitt<{
-  bury: BuryCallBack;
+  bury: BuryCallBackPayload;
 }>();
 const ex: { instance: Bury | null } = {
   instance: null,
@@ -26,13 +18,15 @@ const ex: { instance: Bury | null } = {
 const defaultConfig: BuryConfig = {};
 
 class Bury {
-  on = (callback: (value: BuryCallBack) => void) =>
+  on = (callback: (value: BuryCallBackPayload) => void) =>
     buryEmitter.on("bury", callback);
 
   config: BuryConfig = {};
   private monitor: Monitor;
   private isSpy: boolean = false;
-  todo: ((config: BuryConfig) => void)[] = [];
+  private todo: ((config: BuryConfig) => void)[] = [];
+
+  private ready = false;
 
   constructor(monitor: Monitor, config: BuryConfig) {
     this.monitor = monitor;
@@ -46,59 +40,51 @@ class Bury {
       const from = filters.urlFilter(payload.from.path);
       const to = filters.urlFilter(payload.to.path);
       if (from?.leave) {
-        if (Object.keys(this.config).length === 0) {
-          this.todo.push((config: BuryConfig) => {
-            buryEmitter.emit("bury", {
-              type: "Leave",
-              payload: {
-                ...config,
-                eventId: from.leave,
-                pageUrl: payload.from.path,
-                pageStayTime: payload.duration.toString(),
-                timestamp: payload.time.getTime().toString(),
-              },
-              extra: payload,
-            });
-          });
-        } else {
-          buryEmitter.emit("bury", {
+        // 如果config已经尚未加载好，则将该事件推入等待队列。
+        const buryCallback = (
+          config: BuryConfig = this.config
+        ): BuryCallBackPayload => {
+          return {
             type: "Leave",
             payload: {
-              ...this.config,
+              ...config,
               eventId: from.leave,
               pageUrl: payload.from.path,
               pageStayTime: payload.duration.toString(),
               timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
+          };
+        };
+        if (!this.ready) {
+          this.todo.push((config: BuryConfig) => {
+            buryEmitter.emit("bury", buryCallback(config));
           });
+        } else {
+          buryEmitter.emit("bury", buryCallback());
         }
       }
       if (to?.enter) {
-        if (Object.keys(this.config).length === 0) {
-          this.todo.push((config: BuryConfig) => {
-            buryEmitter.emit("bury", {
-              type: "Enter",
-              payload: {
-                ...config,
-                eventId: to.enter,
-                pageUrl: payload.to.path,
-                timestamp: payload.time.getTime().toString(),
-              },
-              extra: payload,
-            });
-          });
-        } else {
-          buryEmitter.emit("bury", {
+        const buryCallback = (
+          config: BuryConfig = this.config
+        ): BuryCallBackPayload => {
+          return {
             type: "Enter",
             payload: {
-              ...this.config,
+              ...config,
               eventId: to.enter,
               pageUrl: payload.to.path,
               timestamp: payload.time.getTime().toString(),
             },
             extra: payload,
+          };
+        };
+        if (!this.ready) {
+          this.todo.push((config: BuryConfig) => {
+            buryEmitter.emit("bury", buryCallback(config));
           });
+        } else {
+          buryEmitter.emit("bury", buryCallback());
         }
       }
     });
@@ -108,6 +94,7 @@ class Bury {
 
   private initBuried(monitor: Monitor, defaultConfig: BuryConfig) {
     initConfig(defaultConfig).then((res) => {
+      this.ready = true;
       Object.assign(this.config, res);
       const to = filters.urlFilter(window.location.pathname);
       if (to?.enter) {
@@ -309,7 +296,7 @@ export const trackApi = (axiosInstance: AxiosInstance) => {
   }
 };
 
-export const onBury = (callback: (value: BuryCallBack) => void) => {
+export const onBury = (callback: (value: BuryCallBackPayload) => void) => {
   if (ex.instance) {
     return ex.instance.on(callback);
   } else {

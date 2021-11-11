@@ -311,15 +311,15 @@ function trackApi(axiosInstance: AxiosInstance): void;
 当被埋点的时间触发时的回调函数
 
 ```typescript
-function onBury(callback: (value: BuryCallBack) => void): void;
+function onBury(callback: (value: BuryCallBackPayload) => void): void;
 ```
 
 - `callback` 回调函数
 
-#### BuryCallBack
+#### BuryCallBackPayload
 
 ```typescript
-interface BuryCallBack {
+interface BuryCallBackPayload {
   type: "Action" | "Click" | "Leave" | "Enter" | "Api";
   payload: BuryConfig;
   extra?:
