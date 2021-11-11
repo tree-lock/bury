@@ -49,7 +49,8 @@
     "commit": "git add . && git status && git-cz",
     "prepare": "husky install",
     "build": "yarn tsc",
-    "clean": "rm -rf dist pnpm* yarn.* node_modules package-*"
+    "clean": "rm -rf dist pnpm* yarn.* node_modules package-*",
+    "publish": "yarn tsc && npm publish --access public"
   },
   "config": {
     "commitizen": {
