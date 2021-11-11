@@ -1,6 +1,6 @@
 {
   "name": "@xmon/bury",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "monitor most action by mitt, 一个不入侵你业务代码的埋点系统",
   "main": "dist/index.js",
   "repository": "git@github.com:darkXmo/bury.git",
@@ -19,8 +19,7 @@
     "@fingerprintjs/fingerprintjs": "^3.3.0",
     "@xmon/monitor": "^0.2.0",
     "mitt": "^3.0.0",
-    "path-to-regexp": "^6.2.0",
-    "web-vitals": "^2.1.2"
+    "path-to-regexp": "^6.2.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.6",

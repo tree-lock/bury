@@ -4,7 +4,6 @@ import mitt from "mitt";
 import { AxiosInstance, Payload } from "@xmon/monitor/dist/index.interface";
 import { initMonitorVue, initMonitor } from "@xmon/monitor";
 import filters from "./bury.filter";
-import { getLCP, getFID, getCLS } from "web-vitals";
 
 export { initApiMap, initUrlMap } from "./map.config";
 // bupoint 修改为变量，可定制成任何自定义属性
