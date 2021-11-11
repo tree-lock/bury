@@ -131,7 +131,7 @@ class Bury {
       if (Object.keys(this.config).length === 0) {
         this.todo.push((config: BuryConfig) => {
           buryEmitter.emit("bury", {
-            type: "Click",
+            type: "Action",
             payload: {
               ...config,
               eventId: payload.eventId,
@@ -142,7 +142,7 @@ class Bury {
         });
       } else {
         buryEmitter.emit("bury", {
-          type: "Click",
+          type: "Action",
           payload: {
             ...this.config,
             eventId: payload.eventId,
