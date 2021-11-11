@@ -1,6 +1,6 @@
 {
   "name": "@xmon/bury",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "monitor most action by mitt, 一个不入侵你业务代码的埋点系统",
   "main": "dist/index.js",
   "repository": "git@github.com:darkXmo/bury.git",
