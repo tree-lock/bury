@@ -40,7 +40,7 @@ const info: Promise<{
   cname: string;
 }> = new Promise((resolve) => {
   const script = document.createElement("script");
-  script.src = "http://pv.sohu.com/cityjson?ie=utf-8";
+  script.src = "https://pv.sohu.com/cityjson?ie=utf-8";
   script.async = true;
   const head = document.getElementsByTagName("head")[0];
   const s =
