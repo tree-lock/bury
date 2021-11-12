@@ -144,6 +144,18 @@ const increase = track(() => {
 
 埋点行为发生在特定行为执行之前。
 
+### 立即触发
+
+当调用 `tracked` 方法时，会立即触发 `Action` 类型埋点回调。
+
+```javascript
+import { tracked } from "@xmon/bury";
+
+...
+tracked("eventId");
+...
+```
+
 ## 触发埋点事件回调
 
 触发监听行为会同时触发埋点行为，通过 `onBury` 我们可以获取到埋点行为的回调。
@@ -190,34 +202,23 @@ onBury((value) => {
 export const init = (config: BuryConfig, router?: VueRouter) => Bury;
 
 // 预配置中的一些配置并没有默认值，可以通过 config 手动添加预设
-// 标记为 !!! 的参数是 payload 中预定义的。
+// 这些参数是 payload 中预定义的。
 // 你也可以自定义参数
 export interface BuryConfig {
-  eventId?: string; // 必要，事件ID
-  timestamp?: string; // !!!
-  ua?: string; // !!!
-  browser?: "MSIE" | "Firefox" | "Safari" | "Chrome" | "Opera"; // !!!
-  referrer?: string; // !!!
-  width?: string; // !!!
-  height?: string; // !!!
-  ip?: string; // !!!
-  cityName?: string; // !!!
-  isPhone?: "phone" | "pc"; // !!!
+  eventId?: string;
+  timestamp?: string;
+  ua?: string;
+  browser?: "MSIE" | "Firefox" | "Safari" | "Chrome" | "Opera";
+  referrer?: string;
+  width?: string;
+  height?: string;
+  ip?: string;
+  cityName?: string;
+  isPhone?: "phone" | "pc";
   userId?: string;
-  apiUrl?: string;
   pageUrl?: string;
   pageStayTime?: string;
-  project?: string;
-  environment?: string;
-  dataPointVersion?: string;
-  version?: string;
-  channelCode?: string;
-  sourceCode?: string;
-  topCause?: string;
-  phone?: string;
-  enterTime?: string;
-  extraInfo?: string;
-  [K: string]: string;
+  apiUrl?: string; // 仅在 type === Api 中
 }
 ```
 

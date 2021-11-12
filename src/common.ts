@@ -1,44 +1,63 @@
 import { Payload as monitorPayload } from "@xmon/monitor/dist/index.interface";
+import mitt from "mitt";
 import { BuryConfig } from "./config";
 import { BuryCallBackPayload } from "./index.interface";
+
 type Payload =
   | monitorPayload.ActionPayload
   | monitorPayload.ApiPayload
   | monitorPayload.ClickPayload
   | monitorPayload.LoadPayload
   | monitorPayload.RoutePayload;
-interface MinBuryPayload {
-  eventId?: string;
-  timestamp?: string;
-  ua?: string;
-  browser?: "MSIE" | "Firefox" | "Safari" | "Chrome" | "Opera";
-  referrer?: string;
-  width?: string;
-  height?: string;
-  ip?: string;
-  cityName?: string;
-  isPhone?: "phone" | "pc";
-  userId?: string;
-  [K: string]: string;
-}
-interface ActionPayload extends MinBuryPayload {}
 
-interface ActionCallBackPayload {
-  type: "Action";
-  payload: ActionPayload;
-  extra: monitorPayload.ActionPayload;
-}
+export const initBuryCallbackPayload = (
+  type: "Action" | "Click" | "Leave" | "Enter" | "Api",
+  config: BuryConfig,
+  eventId: string,
+  payload?: Payload
+): BuryCallBackPayload => {
+  const defaultValue = {
+    type,
+    payload: {
+      ...config,
+      eventId,
+      pageUrl: window.location.pathname,
+      timestamp:
+        payload?.time.getTime().toString() ?? new Date().getTime().toString(),
+    },
+    extra: payload,
+  };
+  if (type === "Action") {
+    return defaultValue;
+  } else if (type === "Click") {
+    return defaultValue;
+  } else if (type === "Api") {
+    const p = payload as monitorPayload.ApiPayload;
+    defaultValue.payload.apiUrl = p.url;
+    return defaultValue;
+  } else if (type === "Enter") {
+    return defaultValue;
+  } else if (type === "Leave") {
+    const p = payload as
+      | monitorPayload.RoutePayload
+      | monitorPayload.LoadPayload;
+    defaultValue.payload.pageStayTime = p.duration.toString();
+    return defaultValue;
+  }
+};
 
-// const initBuryCallbackPayload = (
-//   type: "Action" | "Click" | "Leave" | "Enter" | "Api",
-//   config: BuryConfig,
-//   eventId: string,
-//   payload: Payload
-// ): BuryCallBackPayload => {
-//   if (type === "Action") {
-//   } else if (type === "Click") {
-//   } else if (type === "Api") {
-//   } else if (type === "Enter") {
-//   } else if (type === "Leave") {
-//   }
-// };
+export const buryEmitter = mitt<{
+  bury: BuryCallBackPayload;
+}>();
+
+export const buryEmit = (
+  type: "Action" | "Click" | "Leave" | "Enter" | "Api",
+  config: BuryConfig,
+  eventId: string,
+  payload?: Payload
+) => {
+  buryEmitter.emit(
+    "bury",
+    initBuryCallbackPayload(type, config, eventId, payload)
+  );
+};

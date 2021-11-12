@@ -17,7 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^3.3.0",
-    "@xmon/monitor": "^0.2.0",
+    "@xmon/monitor": "0.2.4",
     "mitt": "^3.0.0",
     "path-to-regexp": "^6.2.0"
   },
